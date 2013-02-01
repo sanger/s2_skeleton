@@ -1,5 +1,5 @@
 define([], function() {
-  var MONAD = function(modifier) {
+  window.MONAD = function(modifier) {
     'use strict';
 
     var prototype = Object.create(null);
@@ -26,12 +26,17 @@ define([], function() {
       return monad;
     }
 
+    // Adds a method to the mondad.  This (the context) will be bound to the monad.
+    // The method inputs will be available within the function call and
+    // the return is the final return of the call not the monad.
+    // So to use this func should know about monads...
     unit.method = function (name, func) {
       prototype[name] = func;
       return unit;
     };
 
-    // unit :: (a -> b) -> (a -> monad(b))
+    // Adds a method to the monad with func's inputs bound to the monad.
+    // func's return is the final return of the call not the monad.
     unit.lift_value = function (name, func) {
       prototype[name] = function () {
         return this.bind(func, arguments);
@@ -39,6 +44,9 @@ define([], function() {
       return unit;
     };
 
+    // lift :: (a -> b) -> (monad(a) -> monad(b))
+    // func's inputs are bound to the monad.
+    // the return value is wrapped in another monad.
     unit.lift = function (name, func) {
       prototype[name] = function () {
         var result = this.bind(func, arguments);
@@ -52,97 +60,65 @@ define([], function() {
   };
 
 
-  var S2Element = MONAD(function(monad, resource){
-    monad.resources = {};
+
+
+  window.S2Root = function(options){
+    var S2Monad = MONAD();
+
+    S2Monad.method('rootPath',function(){ return options.url; });
+
+    var element = Object.create(null);
 
     var ajaxCalls = {
-      post: function(actionPath){
-        return function(){
-          return $.ajax({
-            type:        "POST",
-            // url:         S2.path + actionPath,
-            url:         "http://mattdenner.apiary.io/" + actionPath,
-            contentType: "json",
-            dataType:    "json",
-          }).done(function(response){
-            console.debug('done');
-            monad.resources[resource] = S2Element(response.valueOf());
-          });
-        };
-      },
+      get: function(parent, actionPath){
+        var monad;
 
-      get: function(actionPath){
-        return function(){
-          return $.ajax({
-            type:        "POST",
-            // url:         S2.path + actionPath,
-            url:         "http://mattdenner.apiary.io/" + actionPath,
-            contentType: "json",
-            dataType:    "json",
-          }).done(function(response){
-            console.debug('done');
-            monad.resources[resource] = S2Element(response.valueOf());
-          });
-        };
+        $.ajax({
+          type:         "GET",
+          url:          options.url + (actionPath || ''),
+          contentType:  "json",
+          dataType:     "json",
+        }).done(function(response){
+          monad = S2Monad(response.valueOf());
+        });
+
+        return monad;
       }
 
     };
 
     var actionMethods = {
-      all: ajaxCalls.get,
-      first: ajaxCalls.post,
-      create: ajaxCalls.post,
-      read: ajaxCalls.post,
-      last: ajaxCalls.post,
-      update: ajaxCalls.post
-
-    };
-
-    for (action in resource.actions){
-      monad[action] = actionMethods[action](resource.actions[action]);
+      all:     ajaxCalls.get,
+      first:   ajaxCalls.post,
+      create:  ajaxCalls.post,
+      read:    ajaxCalls.post,
+      last:    ajaxCalls.post,
+      update:  ajaxCalls.post,
+      root:    ajaxCalls.get
     }
-
-  });
-
-
-  window.S2Root = function(options){
-
-    var S2       = Object.create(null);
-    S2.path      = options.url;
-    var resources = {};
-
-    var search = function(elementName) {
-      if (elementName === undefined) return Object.keys(resources);
-      return resources[elementName];
-    };
 
     var loadResources = function(response){
       console.debug('Loading API root:-');
-      for (resource in response.valueOf()) {
-        resources[resource] = S2Element(response.valueOf()[resource]);
-        console.debug('\t...adding '+resource);
+      var resources = response.valueOf();
+
+      for (resource in resources){
+        if (resource === 'actions'){
+          monad.lift(action, actionMethods[action](resources[action]));
+        } else {
+          // store a new monad
+        }
       }
     };
 
-    var launchDebugger = function(response){
-      console.debug('Failed to load API root');
-      debugger;
-    };
+    var launchDebugger = function(response){ console.debug('Failed to load API root'); };
 
-    $.ajax({
-      type:        "GET",
-      url:         S2.path,
-      contentType: "json",
-      dataType:    "json"
-    }).done(loadResources).
-      fail(launchDebugger);
+    actionMethods.root()
 
-
-    return search;
+    return ;
   };
 
   window.S2 = new S2Root({
-    url: "http://mattdenner.apiary.io/"
+    url: "http://mattdenner.apiary.io"
   });
 
 
