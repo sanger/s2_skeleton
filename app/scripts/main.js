@@ -9,7 +9,7 @@ require.config({
   }
 });
  
-require(['app'], function(app) {
+require(['api'], function(api) {
   // use app here
-  console.log(app);
+  window.S2 = api;
 });
