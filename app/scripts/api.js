@@ -2,36 +2,46 @@ define([], function() {
   var S2Api = function(options){
 
     var S2Resource = function(json){
+      function processActions(actions){
+        // Replace the actions node with methods on the main resource object
+        for (var action in actions){
+          resource[action] = function(data){
+            var prototype = Object.create(null);
+
+            prototype.addResource = function(resourceType, resource){
+              this.type = resourceType;
+              $.extend(this, new S2Resource(resource));
+            };
+
+            var childResource = Object.create(prototype);
+
+            actionMethods[action](childResource, json[node][action], data);
+            return childResource;
+          };
+        }
+      }
+
       var resource = Object.create(null);
 
       for (var node in json){
         if (node === 'actions'){
-
-          // Replace the actions node with methods on the main resource object
-          for (var action in json.actions){
-            resource[action] = function(data){
-              var childResource = Object.create(null);
-
-              childResource.addResource = function(resourceType, resource){
-                this.type = resourceType;
-                $.extend(this, new S2Resource(resource));
-              };
-
-              actionMethods[action](childResource, json[node][action], data);
-              return childResource;
-            };
-          }
-
+          processActions(json.actions);
+        } else if (json[node] instanceof Array) {
+          // process as collection of nested resource
+        } else if (json[node] instanceof Object) {
+          // This has to be done after the check for Array, which is also an object
         } else { resource[node] = json[node]; }
       }
       return resource;
     };
 
-    var root = Object.create(null);
-    root.addResource = function(resourceType, resource){
+    var prototype = Object.create(null);
+    prototype.addResource = function(resourceType, resource){
       this.type          = 'S2root';
       this[resourceType] = new S2Resource(resource);
     };
+
+    var root = Object.create(prototype);
 
     var ajaxCall = function(method){
       return function(parent, actionPath, data){
@@ -66,8 +76,5 @@ define([], function() {
 
     return root;
   };
-
-  return new S2Api({
-    url: "http://mattdenner.apiary.io"
-  });
+  return S2Api;
 });
