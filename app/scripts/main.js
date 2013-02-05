@@ -8,8 +8,10 @@ require.config({
     jquery: 'vendor/jquery.min'
   }
 });
- 
-require(['app'], function(app) {
+
+require(['api'], function(api) {
   // use app here
-  console.log(app);
+  window.S2 = new api({
+    url: "http://mattdenner.apiary.io"
+  });
 });
