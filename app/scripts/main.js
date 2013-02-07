@@ -11,9 +11,14 @@ require.config({
   }
 });
 
-require(['mapper'], function(mapper) {
-    var S2 = {};
-    new mapper(S2);
+require(['s2ajax','config'], function(s2ajax, config) {
+    //only need to list above variables used below
 
-    //dataMap = mapper(S2)
+    s2ajax.send('root','order.json', null, 'initialise');
+
+
+    $(document).on('initialise', function (){
+        //test
+        console.log('msg receved');
+    })
 });
