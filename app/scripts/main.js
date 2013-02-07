@@ -5,16 +5,15 @@ require.config({
   paths: {
     hm: 'vendor/hm',
     esprima: 'vendor/esprima',
-    jquery: 'vendor/jquery.min'
+    jquery: 'vendor/jquery.min',
+    d3: '../components/d3/d3.min'
     
   }
 });
 
-require(['api','app'], function(api,app) {
-  // use app here
-  window.S2 = new api({
-    //url: "http://mattdenner.apiary.io"
-  });
-  console.log(S2);
-  S2.ajax.send('root', 'order.json', null, S2.resources.add);
+require(['mapper'], function(mapper) {
+    var S2 = {};
+    new mapper(S2);
+
+    //dataMap = mapper(S2)
 });
