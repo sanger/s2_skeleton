@@ -1,34 +1,44 @@
-define(['s2events'], function (s2event) {
+define(['config', 's2resource', 's2api'], function (config, s2resource, s2) {
+    "use strict";
+    var s2ajax = {
+        send:function (action, actionPath, data, callback) {
+            $.ajax({
+                type:       config.actionMethods[action],
+                url:        config.apiUrl + (actionPath || ''),
+                contentType:"json",
+                dataType:   "json",
+                data:       data,
+                success:    function (json) {
 
-    var actionMethods = {
-        search:'POST',
-            first:'post',
-            create:'post',
-            read:'post',
-            last:'post',
-            update:'post',
-            root:'GET'
-    }
-
-    var url = '';
-    return {
-
-    //url: 'http://sangerlimsapi.apiary.io',
-    //url: 'http://mattdenner.apiary.io',
-    send: function (action, actionPath, data, event) {
-        $.ajax({
-            type: actionMethods[action],
-            url: url + (actionPath || ''),
-            contentType: "json",
-            dataType: "json",
-            data: data,
-            success: function (json) {
-                if (event) {
-                    s2event.send(event, json);
+                    s2.emit({
+                        event:   'gotJson',
+                        callback:callback,
+                        data:    json
+                    });
                 }
-            }
+            });
+        },
+        search:  {
+            /*
+             barcodes: function (barcode){
 
-        });
-    }
+             s2ajax.ajaxSend('search', S2.resources.search.all, {barcode: barcode}, S2.resources.add);
+             }
+             */
+        },
+        parseJson:function (json) {
+            //console.log(json);
+            for (var key in json) {
+                var node = json[key];
+
+                if (node.uuid) {//if this is actually a resource
+                    new s2resource[key](node);
+
+                }
+
+
+            }
+        }
     };
+    return s2ajax;
 });
