@@ -1,24 +1,19 @@
 require.config({
-  shim: {
-  },
 
-  paths: {
-    hm: 'vendor/hm',
-    esprima: 'vendor/esprima',
-    jquery: 'vendor/jquery.min',
-    d3: '../components/d3/d3.min'
-    
-  }
+    shim: {
+    },
+    paths:{
+        hm:     'vendor/hm',
+        esprima:'vendor/esprima',
+        jquery: 'vendor/jquery.min',
+        d3:     '../components/d3/d3.min',
+        _:      'vendor/underscore'
+
+    }
 });
-
-require(['s2ajax','config'], function(s2ajax, config) {
-    //only need to list above variables used below
-
-    s2ajax.send('root','order.json', null, 'initialise');
-
-
-    $(document).on('initialise', function (){
-        //test
-        console.log('msg receved');
-    })
+require(['s2ajax','app','s2resource'], function (s2ajax,app,s2resource) {
+    //this runs last
+    s2.listener('gotJson', s2ajax.parseJson);
+    s2ajax.send('root', 'tube.json', null, null);
+    return {};
 });
