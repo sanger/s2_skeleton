@@ -1,17 +1,4 @@
-<<<<<<< Updated upstream
-describe("S2Api", function() {
-    var send;
-    beforeEach(function () {
-        spy = spyOn(S2.ajax, 'send').andCallThrough();
-    });
 
-    it("has initialised correctly", function() {
-        expect(typeof S2).toEqual('object');
-    });
-
-    it("ajax.send is set up", function() {
-        expect(typeof S2.ajax.send).not.toBeNull();
-=======
 require.config({
 //   baseUrl: 'scripts'
 });
@@ -46,7 +33,7 @@ require(['s2ajax'],function(s2ajax){
         });
 
 
->>>>>>> Stashed changes
+
     });
 
     it("ajax send has been called", function() {
@@ -57,11 +44,7 @@ require(['s2ajax'],function(s2ajax){
 
 });
 
-<<<<<<< Updated upstream
-xdescribe("Ajax", function() {
-    it("can search for barcodes", function() {
-        expect(S2.search.barcodes('SRC123456')).not.toBeNull();
-=======
+
 require(['s2events'],function(s2event){
     //console.log(config)
     describe("s2events", function() {
@@ -89,6 +72,6 @@ require(['s2events'],function(s2event){
         });
 */
 
->>>>>>> Stashed changes
+
     });
 });
